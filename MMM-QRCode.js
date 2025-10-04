@@ -31,7 +31,24 @@ Module.register("MMM-QRCode", {
 		this.config = { ...this.defaults,	...this.config };
 		Log.log(`Starting module: ${this.name}`);
 	},
+	
+  //Changes made to allow QRCode to update via a notification
+  	getAfterDS: function(str) { // Corrected function declaration
+		var pathfile = str.split("DS218/")[1] || "";
+		console.log(pathfile + " showmessage");
+		return pathfile;
+	},
+	
+	notificationReceived(notification, payload) {
+		if (notification === "IMAGEFILEPATH" && payload) {
+			Log.log(`${this.name}: Received new QR Code text: ${payload}`);
+			var subpayload = this.getAfterDS(payload);
+			this.config.text = "http://192.168.1.218/photo/" + subpayload; // Update config text dynamically
+			this.updateDom(); // Re-render the module
+		}
+	},
 
+	
 	getDom () {
 		const wrapperEl = document.createElement("div");
 		wrapperEl.classList.add("qrcode");
@@ -46,7 +63,7 @@ Module.register("MMM-QRCode", {
 			},
 			errorCorrectionLevel: "H"
 		};
-
+	
 		QRCode.toCanvas(
 			qrcodeEl,
 			this.config.text,
@@ -56,6 +73,8 @@ Module.register("MMM-QRCode", {
 				Log.log(`${this.name}: successfully created QRCode.`);
 			}
 		);
+
+			console.log(this.config.text);  //me
 
 		const imageEl = document.createElement("div");
 		imageEl.classList.add("qrcode__image");
