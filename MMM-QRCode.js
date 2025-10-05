@@ -32,9 +32,15 @@ Module.register("MMM-QRCode", {
 		Log.log(`Starting module: ${this.name}`);
 	},
 	
-  //Changes made to allow QRCode to update via a notification
-  	getAfterDS: function(str) { // Corrected function declaration
-		var pathfile = str.split("DS218/")[1] || "";
+/*  Changes made to allow QRCode to update via a notification of a file path
+    Builds a qrcode URL that links to a server address with same directory structure
+    I use for pulling random images from a NAS then enabling the QR code to link to
+    image through web server
+*/
+  	getAfterDS: function(str) { 
+        // pull split str from config vble
+        var sString = this.config.searchPathString
+		var pathfile = str.split(sString)[1] || "";
 		console.log(pathfile + " showmessage");
 		return pathfile;
 	},
@@ -43,7 +49,9 @@ Module.register("MMM-QRCode", {
 		if (notification === "IMAGEFILEPATH" && payload) {
 			Log.log(`${this.name}: Received new QR Code text: ${payload}`);
 			var subpayload = this.getAfterDS(payload);
-			this.config.text = "http://192.168.1.218/photo/" + subpayload; // Update config text dynamically
+            //builds a URL based on a directory string and a server URL
+            var sURL = this.config.serverURL
+			this.config.text = sURL + subpayload; // Update config text dynamically
 			this.updateDom(); // Re-render the module
 		}
 	},
